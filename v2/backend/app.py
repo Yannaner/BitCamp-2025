@@ -2,6 +2,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from quantum import BikeRentalSimulation
 import json
+from gemini_service import get_all_explanations
+
+#APP.py
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -9,6 +12,34 @@ CORS(app)  # Enable CORS for all routes
 # Initialize the simulation
 simulation = BikeRentalSimulation(num_stations=20, num_bikes=250)
 simulation.initialize_system()
+
+@app.route('/api/explain', methods=['POST'])
+def explain_simulation():
+    """Generate AI explanations of the simulation using Gemini API."""
+    data = request.json
+    explanation_type = data.get('type', 'both')  # 'technical', 'non-technical', or 'both'
+    
+    # Get current simulation state for context
+    simulation_state = json.loads(simulation.export_simulation_data())
+    
+    try:
+        # Get explanations from the Gemini service
+        explanations = get_all_explanations(explanation_type, simulation_state)
+        print("Simulation State:", simulation_state)
+        
+        return jsonify({
+            'explanations': explanations,
+            'simulation_state': simulation_state
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'explanations': {
+                'technical': 'Error generating technical explanation.' if explanation_type in ['technical', 'both'] else '',
+                'non_technical': 'Error generating non-technical explanation.' if explanation_type in ['non-technical', 'both'] else ''
+            }
+        }), 500
 
 @app.route('/api/init', methods=['GET'])
 def initialize_simulation():

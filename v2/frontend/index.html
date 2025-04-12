@@ -40,12 +40,18 @@
             <span class="time-icon">🕒</span>
             <span id="time-display">08:00</span>
           </div>
-          <button id="advance-time" class="advance-time"><span class="emoji">⏭️</span> +1 Hour</button>
+          <button id="advance-time" class="advance-time">
+            <span class="emoji">⏭️</span> +1 Hour
+          </button>
         </div>
         
         <button id="run-step"><span class="emoji">▶️</span> Run Single Step</button>
         <button id="simulate-day" class="simulate"><span class="emoji">📅</span> Simulate Full Day</button>
         <button id="reset-simulation" class="reset"><span class="emoji">🔄</span> Reset Simulation</button>
+        <!-- New Explanation Button -->
+        <button id="fetch-explanations" class="fetch-btn">
+          <span class="emoji">💡</span> Show Explanations
+        </button>
       </div>
     </header>
     
@@ -107,9 +113,23 @@
         
         <div class="chart-container simulation-panel">
           <h2>📈 Usage Over Time</h2>
-          <div class="chart-info">Dashed line: Expected activity level based on time of day<br>
+          <div class="chart-info">
+            Dashed line: Expected activity level based on time of day
           </div>
           <canvas id="usage-chart"></canvas>
+        </div>
+      </div>
+      
+      <!-- New Explanations Section -->
+      <div id="explanations-container" class="simulation-panel simulation-explanations">
+        <h2>💡 Simulation Explanations</h2>
+        <div class="explanation technical">
+          <h3>Technical Explanation</h3>
+          <p id="technical-explanation">Click the "Show Explanations" button to load the explanation.</p>
+        </div>
+        <div class="explanation non-technical">
+          <h3>Non-Technical Explanation</h3>
+          <p id="non-technical-explanation">Click the "Show Explanations" button to load the explanation.</p>
         </div>
       </div>
     </main>
