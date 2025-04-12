@@ -1,0 +1,5 @@
+cirq
+numpy
+matplotlib
+flask
+flask-cors

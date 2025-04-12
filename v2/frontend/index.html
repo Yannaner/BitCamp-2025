@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantum Bike Rental Simulation</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Quantum Bike Rental Simulation</h1>
+      <div class="controls">
+        <div class="control-group">
+          <label for="simulation-mode">Simulation Mode:</label>
+          <select id="simulation-mode">
+            <option value="quantum" selected>Quantum</option>
+            <option value="classical">Classical</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="weather-select">Weather:</label>
+          <select id="weather-select">
+            <option value="sunny" selected>Sunny</option>
+            <option value="cloudy">Cloudy</option>
+            <option value="rainy">Rainy</option>
+            <option value="snowy">Snowy</option>
+            <option value="stormy">Stormy</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="time-display">Time: </label>
+          <span id="time-display">08:00</span>
+          <button id="advance-time">+1 Hour</button>
+        </div>
+        
+        <button id="run-step">Run Single Step</button>
+        <button id="simulate-day">Simulate Full Day</button>
+        <button id="reset-simulation">Reset Simulation</button>
+      </div>
+    </header>
+    
+    <main>
+      <div class="dashboard">
+        <div class="stats-panel">
+          <h2>Simulation Statistics</h2>
+          <div id="stats-container">
+            <div class="stat-item">
+              <span class="stat-label">Total Stations:</span>
+              <span id="total-stations" class="stat-value">15</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total Bikes:</span>
+              <span id="total-bikes" class="stat-value">150</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Current Weather:</span>
+              <span id="current-weather" class="stat-value">Sunny</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Current Time:</span>
+              <span id="current-time" class="stat-value">08:00</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="visualization-panel">
+          <h2>Station Map</h2>
+          <div id="map-container"></div>
+        </div>
+      </div>
+      
+      <div class="station-list">
+        <h2>Bike Station Status</h2>
+        <div id="stations-container"></div>
+      </div>
+      
+      <div class="charts">
+        <div class="chart-container">
+          <h2>Bike Distribution</h2>
+          <canvas id="distribution-chart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+          <h2>Usage Over Time</h2>
+          <canvas id="usage-chart"></canvas>
+        </div>
+      </div>
+    </main>
+    
+    <div id="loading-overlay" class="hidden">
+      <div class="spinner"></div>
+      <p>Running simulation...</p>
+    </div>
+  </div>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
