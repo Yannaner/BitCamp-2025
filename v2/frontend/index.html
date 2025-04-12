@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NYC Quantum Bike Rental Simulation</title>
   <link rel="stylesheet" href="./src/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 </head>
 <body>
   <div id="app">
@@ -15,7 +16,7 @@
           <label for="simulation-mode">Simulation Mode:</label>
           <div class="custom-select">
             <select id="simulation-mode">
-              <option value="quantum" selected>🔬 Quantum</option>
+              <option value="quantum" selected>⚛️ Quantum</option>
               <option value="classical">🧮 Classical</option>
             </select>
           </div>
@@ -50,7 +51,7 @@
     
     <main>
       <div class="dashboard">
-        <div class="stats-panel">
+        <div class="stats-panel simulation-panel">
           <h2>📊 Simulation Statistics</h2>
           <div id="stats-container">
             <div class="stat-item">
@@ -69,33 +70,45 @@
               <span class="stat-label">🕒 Current Time:</span>
               <span id="current-time" class="stat-value">08:00</span>
             </div>
+            <div class="stat-item">
+              <span class="stat-label">🔄 System Activity:</span>
+              <span id="activity-indicator" class="status-indicator idle">Idle</span>
+            </div>
+            <div class="stat-item highlight-stat">
+              <span class="stat-label">⚡ System Efficiency:</span>
+              <span id="system-efficiency" class="efficiency medium">95%</span>
+            </div>
           </div>
           <div class="simulation-description">
             <p style="margin-top: 20px; font-style: italic; font-size: 0.9em;">
-              This simulation represents New York City's bike sharing network using quantum computing algorithms for movement prediction.
+              This simulation represents New York City's bike sharing network using 
+              <span class="quantum-badge">⚛️ QUANTUM COMPUTING</span> for accurate movement prediction.
             </p>
           </div>
         </div>
         
-        <div class="visualization-panel">
+        <div class="visualization-panel simulation-panel">
           <h2>🗺️ NYC Station Map</h2>
           <div id="map-container"></div>
         </div>
       </div>
       
-      <div class="station-list">
+      <div class="station-list simulation-panel">
         <h2>🚲 NYC Bike Station Status</h2>
         <div id="stations-container"></div>
       </div>
       
       <div class="charts">
-        <div class="chart-container">
+        <div class="chart-container simulation-panel">
           <h2>📊 Bike Distribution</h2>
+          <div class="chart-info">Current distribution of bikes across all stations in NYC</div>
           <canvas id="distribution-chart"></canvas>
         </div>
         
-        <div class="chart-container">
+        <div class="chart-container simulation-panel">
           <h2>📈 Usage Over Time</h2>
+          <div class="chart-info">Dashed line: Expected activity level based on time of day<br>
+          </div>
           <canvas id="usage-chart"></canvas>
         </div>
       </div>
@@ -103,7 +116,7 @@
     
     <div id="loading-overlay" class="hidden">
       <div class="spinner"></div>
-      <p>🔬 Running quantum simulation...</p>
+      <p>⚛️ Running quantum simulation...</p>
     </div>
   </div>
   
