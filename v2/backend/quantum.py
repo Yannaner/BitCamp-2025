@@ -37,21 +37,39 @@ class BikeRentalSimulation:
         self.station_capacities = np.random.randint(5, 20, size=self.num_stations)
         
         # Initialize station locations (x, y coordinates) with 1-based indexing
-        # Creating a more map-like distribution of stations
+        # Creating a proper distribution across the map area for better visualization
         self.station_locations = {}
-        city_centers = [(2.5, 2.5), (7.5, 7.5), (2.5, 7.5), (7.5, 2.5)]
         
-        for i in range(self.num_stations):
-            # Choose a city center to cluster around
-            center = city_centers[i % len(city_centers)]
-            # Add some randomness around the center
-            x = center[0] + np.random.normal(0, 1.0)
-            y = center[1] + np.random.normal(0, 1.0)
-            # Keep within map boundaries
-            x = max(0, min(10, x))
-            y = max(0, min(10, y))
-            # Store with 1-based index
-            self.station_locations[i + 1] = (x, y)
+        # Define better coverage of the map for NYC-like station distribution
+        # Ensure stations are spread across the entire map instead of just clustered
+        if self.num_stations <= 4:
+            # For very few stations, place them at the corners of the map
+            positions = [(2, 2), (8, 2), (2, 8), (8, 8)]
+            for i in range(self.num_stations):
+                self.station_locations[i + 1] = positions[i]
+        else:
+            # For more stations, create a grid-like distribution with some randomness
+            grid_size = int(np.ceil(np.sqrt(self.num_stations)))
+            spacing = 9.0 / (grid_size + 1)  # Leave margin
+            
+            for i in range(self.num_stations):
+                row = i // grid_size
+                col = i % grid_size
+                
+                # Calculate base position on grid
+                base_x = spacing + col * spacing
+                base_y = spacing + row * spacing
+                
+                # Add small random offset for natural look (but not too much)
+                x = base_x + np.random.uniform(-spacing/4, spacing/4)
+                y = base_y + np.random.uniform(-spacing/4, spacing/4)
+                
+                # Ensure within boundaries
+                x = max(0.5, min(9.5, x))
+                y = max(0.5, min(9.5, y))
+                
+                # Store with 1-based index
+                self.station_locations[i + 1] = (x, y)
         
         # Initialize bikes distribution across stations
         remaining_bikes = self.num_bikes

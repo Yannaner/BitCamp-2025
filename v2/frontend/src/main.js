@@ -11,6 +11,44 @@ let usageHistory = [];
 let distributionChart = null;
 let usageChart = null;
 
+// New York City neighborhoods for simulation
+const NYC_NEIGHBORHOODS = {
+  'manhattan': [
+    { name: 'Midtown', x: 5.0, y: 5.0 },
+    { name: 'Downtown', x: 4.8, y: 2.5 },
+    { name: 'Upper East Side', x: 7.2, y: 7.5 },
+    { name: 'Upper West Side', x: 3.0, y: 7.5 }
+  ],
+  'brooklyn': [
+    { name: 'Williamsburg', x: 7.0, y: 3.0 },
+    { name: 'DUMBO', x: 8.0, y: 2.0 }
+  ],
+  'queens': [
+    { name: 'Long Island City', x: 8.5, y: 5.5 }
+  ],
+  'bronx': [
+    { name: 'South Bronx', x: 2.5, y: 9.0 }
+  ]
+};
+
+// Weather icons mapping
+const WEATHER_ICONS = {
+  'sunny': '☀️',
+  'cloudy': '☁️',
+  'rainy': '🌧️',
+  'snowy': '❄️',
+  'stormy': '⛈️'
+};
+
+// Station status indicators
+const STATION_STATUS = {
+  'empty': { color: '#c0392b', emoji: '⚠️', description: 'Empty' },
+  'almost_empty': { color: '#f1c40f', emoji: '⚠️', description: 'Almost Empty' },
+  'balanced': { color: '#2ecc71', emoji: '✅', description: 'Balanced' },
+  'almost_full': { color: '#f39c12', emoji: '⚠️', description: 'Almost Full' },
+  'full': { color: '#e74c3c', emoji: '⛔', description: 'Full' }
+};
+
 // DOM Elements
 const simulationModeSelect = document.getElementById('simulation-mode');
 const weatherSelect = document.getElementById('weather-select');
@@ -27,20 +65,20 @@ const currentWeatherEl = document.getElementById('current-weather');
 const currentTimeEl = document.getElementById('current-time');
 const loadingOverlay = document.getElementById('loading-overlay');
 
-// Initialize the application
-async function initializeApp() {
-  showLoading(true);
-  try {
-    const response = await fetch(`${API_BASE_URL}/init`);
-    simulationData = await response.json();
-    updateUI();
-    initializeCharts();
-    showLoading(false);
-  } catch (error) {
-    console.error('Failed to initialize simulation:', error);
-    showLoading(false);
-    alert('Failed to connect to simulation server. Please make sure the backend is running.');
+// Show/hide loading overlay
+function showLoading(show) {
+  if (show) {
+    loadingOverlay.classList.remove('hidden');
+  } else {
+    loadingOverlay.classList.add('hidden');
   }
+}
+
+// Add this debugging function to the top of your existing code
+function debugObject(obj, label = 'Debug') {
+  console.log(`--- ${label} ---`);
+  console.log(JSON.stringify(obj, null, 2));
+  console.log('----------------');
 }
 
 // Format time for display (24-hour format to HH:MM)
@@ -48,231 +86,136 @@ function formatTime(hour) {
   return `${hour.toString().padStart(2, '0')}:00`;
 }
 
-// Update the UI with current simulation data
-function updateUI() {
-  if (!simulationData) return;
-  
-  // Update stats
-  totalStationsEl.textContent = simulationData.stations.length;
-  totalBikesEl.textContent = simulationData.total_bikes;
-  currentWeatherEl.textContent = simulationData.weather.charAt(0).toUpperCase() + simulationData.weather.slice(1);
-  currentTimeEl.textContent = formatTime(simulationData.time);
-  timeDisplay.textContent = formatTime(simulationData.time);
-  
-  // Update map
-  renderMap();
-  
-  // Update station list
-  renderStationList();
-  
-  // Update charts
-  updateCharts();
-  
-  // Track history for usage chart
-  trackUsageHistory();
+// Get weather emoji based on condition
+function getWeatherEmoji(weather) {
+  const emojis = {
+    'sunny': '☀️',
+    'cloudy': '☁️',
+    'rainy': '🌧️',
+    'snowy': '❄️',
+    'stormy': '⛈️'
+  };
+  return emojis[weather] || '🌤️';
 }
 
-// Render the bike stations map
-function renderMap() {
-  mapContainer.innerHTML = '';
-  mapContainer.style.position = 'relative';
-  
-  // Find the bounds of the map
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  
-  simulationData.stations.forEach(station => {
-    const { x, y } = station.location;
-    minX = Math.min(minX, x);
-    maxX = Math.max(maxX, x);
-    minY = Math.min(minY, y);
-    maxY = Math.max(maxY, y);
-  });
-  
-  // Add some padding
-  const padding = 1;
-  minX -= padding;
-  maxX += padding;
-  minY -= padding;
-  maxY += padding;
-  
-  // Map width and height
-  const mapWidth = mapContainer.clientWidth;
-  const mapHeight = mapContainer.clientHeight;
-  
-  // Scale factor to convert coordinates to pixels
-  const scaleX = mapWidth / (maxX - minX);
-  const scaleY = mapHeight / (maxY - minY);
-  
-  // Render each station as a point
-  simulationData.stations.forEach(station => {
-    const { id, bikes, capacity, location } = station;
-    
-    // Calculate position
-    const x = (location.x - minX) * scaleX;
-    const y = (location.y - minY) * scaleY;
-    
-    // Create station point
-    const stationPoint = document.createElement('div');
-    stationPoint.className = 'station-point';
-    stationPoint.textContent = id;
-    stationPoint.style.left = `${x}px`;
-    stationPoint.style.top = `${y}px`;
-    
-    // Calculate fill ratio for color
-    const fillRatio = bikes / capacity;
-    let color;
-    
-    if (fillRatio > 0.8) {
-      color = '#e74c3c'; // Red for almost full
-    } else if (fillRatio < 0.2) {
-      color = '#f39c12'; // Orange for almost empty
-    } else {
-      color = '#2ecc71'; // Green for normal
-    }
-    
-    stationPoint.style.backgroundColor = color;
-    
-    // Add tooltip on hover
-    stationPoint.addEventListener('mouseover', (e) => {
-      const tooltip = document.createElement('div');
-      tooltip.className = 'station-tooltip';
-      tooltip.innerHTML = `
-        <div>Station ${id}</div>
-        <div>Bikes: ${bikes}/${capacity}</div>
-      `;
-      tooltip.style.left = `${e.pageX + 10}px`;
-      tooltip.style.top = `${e.pageY + 10}px`;
-      document.body.appendChild(tooltip);
-      
-      stationPoint.addEventListener('mousemove', (e) => {
-        tooltip.style.left = `${e.pageX + 10}px`;
-        tooltip.style.top = `${e.pageY + 10}px`;
-      });
-      
-      stationPoint.addEventListener('mouseout', () => {
-        document.body.removeChild(tooltip);
-      });
-    });
-    
-    mapContainer.appendChild(stationPoint);
-  });
-}
-
-// Render the station list
-function renderStationList() {
-  stationsContainer.innerHTML = '';
-  
-  simulationData.stations.forEach(station => {
-    const { id, bikes, capacity } = station;
-    const percentFull = Math.round((bikes / capacity) * 100);
-    
-    const stationCard = document.createElement('div');
-    stationCard.className = 'station-card';
-    stationCard.innerHTML = `
-      <div class="station-name">Station ${id}</div>
-      <div>Bikes: ${bikes} / ${capacity}</div>
-      <div class="progress-container">
-        <div class="progress-bar" style="width: ${percentFull}%"></div>
-      </div>
-      <div>${percentFull}% Full</div>
-    `;
-    
-    stationsContainer.appendChild(stationCard);
-  });
+// Get station status based on bike/capacity ratio
+function getStationStatus(bikes, capacity) {
+  const ratio = bikes / capacity;
+  if (bikes === 0) return 'empty';
+  if (ratio <= 0.2) return 'almost-empty';
+  if (ratio >= 0.8) return 'almost-full';
+  if (ratio === 1) return 'full';
+  return 'balanced';
 }
 
 // Initialize charts
 function initializeCharts() {
-  // Bike distribution chart
-  const distributionCtx = document.getElementById('distribution-chart').getContext('2d');
-  distributionChart = new Chart(distributionCtx, {
-    type: 'bar',
-    data: {
-      labels: simulationData.stations.map(s => `Station ${s.id}`),
-      datasets: [
-        {
-          label: 'Bikes',
-          data: simulationData.stations.map(s => s.bikes),
-          backgroundColor: '#3498db'
-        },
-        {
-          label: 'Capacity',
-          data: simulationData.stations.map(s => s.capacity),
-          backgroundColor: '#ecf0f1'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Number of Bikes'
+  if (!simulationData || !simulationData.stations || simulationData.stations.length === 0) {
+    console.error('Cannot initialize charts: No simulation data available');
+    return;
+  }
+
+  try {
+    // Bike distribution chart
+    const distributionCtx = document.getElementById('distribution-chart').getContext('2d');
+    distributionChart = new Chart(distributionCtx, {
+      type: 'bar',
+      data: {
+        labels: simulationData.stations.map(s => `Station ${s.id}`),
+        datasets: [
+          {
+            label: 'Bikes',
+            data: simulationData.stations.map(s => s.bikes),
+            backgroundColor: '#3498db'
+          },
+          {
+            label: 'Capacity',
+            data: simulationData.stations.map(s => s.capacity),
+            backgroundColor: '#ecf0f1'
           }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Station'
-          }
-        }
-      }
-    }
-  });
-  
-  // Usage over time chart
-  const usageCtx = document.getElementById('usage-chart').getContext('2d');
-  usageChart = new Chart(usageCtx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Bike Usage',
-        data: [],
-        fill: false,
-        borderColor: '#2ecc71',
-        tension: 0.1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          title: {
-            display: true,
-            text: 'Bikes in Use'
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Time'
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Bikes'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Station'
+            }
           }
         }
       }
-    }
-  });
+    });
+    
+    // Usage over time chart
+    const usageCtx = document.getElementById('usage-chart').getContext('2d');
+    usageChart = new Chart(usageCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Bike Usage',
+          data: [],
+          fill: false,
+          borderColor: '#2ecc71',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: 'Bikes in Use'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Time'
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error initializing charts:', error);
+  }
 }
 
 // Update charts with new data
 function updateCharts() {
-  if (!distributionChart || !usageChart) return;
+  if (!distributionChart || !usageChart || !simulationData || !simulationData.stations) {
+    console.warn('Cannot update charts: Charts not initialized or no simulation data');
+    return;
+  }
   
-  // Update distribution chart
-  distributionChart.data.labels = simulationData.stations.map(s => `Station ${s.id}`);
-  distributionChart.data.datasets[0].data = simulationData.stations.map(s => s.bikes);
-  distributionChart.data.datasets[1].data = simulationData.stations.map(s => s.capacity);
-  distributionChart.update();
-  
-  // The usage chart is updated in trackUsageHistory()
+  try {
+    // Update distribution chart
+    distributionChart.data.labels = simulationData.stations.map(s => `Station ${s.id}`);
+    distributionChart.data.datasets[0].data = simulationData.stations.map(s => s.bikes);
+    distributionChart.data.datasets[1].data = simulationData.stations.map(s => s.capacity);
+    distributionChart.update();
+  } catch (error) {
+    console.error('Error updating charts:', error);
+  }
 }
 
 // Track usage history for the time chart
 function trackUsageHistory() {
+  if (!simulationData || !simulationData.stations) return;
+  
   const time = formatTime(simulationData.time);
   const totalCapacity = simulationData.stations.reduce((sum, s) => sum + s.capacity, 0);
   const bikesInUse = totalCapacity - simulationData.total_bikes;
@@ -290,18 +233,288 @@ function trackUsageHistory() {
   
   // Update usage chart
   if (usageChart) {
-    usageChart.data.labels = usageHistory.map(h => h.time);
-    usageChart.data.datasets[0].data = usageHistory.map(h => h.bikesInUse);
-    usageChart.update();
+    try {
+      usageChart.data.labels = usageHistory.map(h => h.time);
+      usageChart.data.datasets[0].data = usageHistory.map(h => h.bikesInUse);
+      usageChart.update();
+    } catch (error) {
+      console.error('Error updating usage chart:', error);
+    }
   }
 }
 
-// Show/hide loading overlay
-function showLoading(show) {
-  if (show) {
-    loadingOverlay.classList.remove('hidden');
-  } else {
-    loadingOverlay.classList.add('hidden');
+// Add NYC neighborhood labels to the map
+function addNYCNeighborhoods() {
+  Object.values(NYC_NEIGHBORHOODS).forEach(neighborhoods => {
+    neighborhoods.forEach(hood => {
+      const label = document.createElement('div');
+      label.className = 'neighborhood-label';
+      label.textContent = hood.name;
+      
+      // Calculate position for the map
+      const mapWidth = mapContainer.clientWidth;
+      const mapHeight = mapContainer.clientHeight;
+      
+      label.style.left = `${hood.x / 10 * mapWidth}px`;
+      label.style.top = `${hood.y / 10 * mapHeight}px`;
+      
+      mapContainer.appendChild(label);
+    });
+  });
+}
+
+// Add instructions section
+function addInstructionsInfo() {
+  const controlsSection = document.querySelector('header .controls');
+  
+  // Create new instructions element
+  const infoDiv = document.createElement('div');
+  infoDiv.className = 'controls-info';
+  infoDiv.innerHTML = `
+    <p>🚲 This is a simulation of New York City's bike sharing system using quantum computing models.</p>
+    <p>Try different weather conditions and observe bike distribution changes!</p>
+  `;
+  
+  controlsSection.appendChild(infoDiv);
+}
+
+// Render the bike stations map
+function renderMap() {
+  mapContainer.innerHTML = '';
+  
+  if (!simulationData || !simulationData.stations || simulationData.stations.length === 0) {
+    console.error('No stations available in simulation data');
+    const errorMessage = document.createElement('div');
+    errorMessage.style.padding = '20px';
+    errorMessage.style.color = 'red';
+    errorMessage.textContent = 'Error: No stations data available';
+    mapContainer.appendChild(errorMessage);
+    return;
+  }
+  
+  // Find the bounds of the map
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  
+  simulationData.stations.forEach(station => {
+    if (!station.location) {
+      console.error('Station missing location:', station);
+      return;
+    }
+    
+    const { x, y } = station.location;
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  });
+  
+  // Add padding to bounds
+  const padding = 1;
+  minX = Math.max(0, minX - padding);
+  maxX = Math.min(10, maxX + padding);
+  minY = Math.max(0, minY - padding);
+  maxY = Math.min(10, maxY + padding);
+  
+  // Handle case where bounds are invalid
+  if (!isFinite(minX) || !isFinite(maxX) || !isFinite(minY) || !isFinite(maxY)) {
+    console.error('Invalid map bounds, using defaults');
+    minX = 0;
+    maxX = 10;
+    minY = 0;
+    maxY = 10;
+  }
+  
+  console.log('Map bounds:', minX, maxX, minY, maxY);
+  
+  // Map dimensions
+  const mapWidth = mapContainer.clientWidth;
+  const mapHeight = mapContainer.clientHeight;
+  
+  // Scale factors
+  const scaleX = mapWidth / (maxX - minX);
+  const scaleY = mapHeight / (maxY - minY);
+  
+  // Render each station as a point
+  simulationData.stations.forEach(station => {
+    const { id, bikes, capacity, location } = station;
+    
+    // Calculate position
+    const x = (location.x - minX) * scaleX;
+    const y = (location.y - minY) * scaleY;
+    
+    console.log(`Rendering station ${id} at position (${x}, ${y})`);
+    
+    // Create station point
+    const stationPoint = document.createElement('div');
+    stationPoint.className = `station-point status-${getStationStatus(bikes, capacity)}`;
+    stationPoint.textContent = id;
+    stationPoint.style.left = `${x}px`;
+    stationPoint.style.top = `${y}px`;
+    
+    // Add tooltip on hover
+    stationPoint.addEventListener('mouseover', (e) => {
+      const tooltip = document.createElement('div');
+      tooltip.className = 'station-tooltip';
+      
+      // Calculate fill percentage
+      const fillPercent = Math.round((bikes / capacity) * 100);
+      
+      tooltip.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 5px;">
+          Station ${id}
+        </div>
+        <div>
+          <div>Bikes: ${bikes}/${capacity}</div>
+          <div>
+            <div class="progress-container" style="margin: 5px 0;">
+              <div class="progress-bar" style="width: ${fillPercent}%;"></div>
+            </div>
+            ${fillPercent}% Full
+          </div>
+        </div>
+      `;
+      tooltip.style.left = `${e.pageX + 10}px`;
+      tooltip.style.top = `${e.pageY + 10}px`;
+      document.body.appendChild(tooltip);
+      
+      stationPoint.addEventListener('mousemove', (e) => {
+        tooltip.style.left = `${e.pageX + 10}px`;
+        tooltip.style.top = `${e.pageY + 10}px`;
+      });
+      
+      stationPoint.addEventListener('mouseout', () => {
+        document.body.removeChild(tooltip);
+      });
+    });
+    
+    mapContainer.appendChild(stationPoint);
+  });
+  
+  // Add legend
+  const legend = document.createElement('div');
+  legend.className = 'legend';
+  legend.innerHTML = `
+    <div style="margin-bottom: 8px; font-weight: bold;">Station Status</div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #e74c3c;"></div>
+      <div>Full</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #f39c12;"></div>
+      <div>Almost Full</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #2ecc71;"></div>
+      <div>Balanced</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #f1c40f;"></div>
+      <div>Almost Empty</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #c0392b;"></div>
+      <div>Empty</div>
+    </div>
+  `;
+  mapContainer.appendChild(legend);
+}
+
+// Render the station list
+function renderStationList() {
+  stationsContainer.innerHTML = '';
+  
+  if (!simulationData || !simulationData.stations) {
+    console.error('No stations available for rendering the list');
+    return;
+  }
+  
+  simulationData.stations.forEach(station => {
+    const { id, bikes, capacity } = station;
+    const percentFull = Math.round((bikes / capacity) * 100);
+    const status = getStationStatus(bikes, capacity);
+    
+    const stationCard = document.createElement('div');
+    stationCard.className = 'station-card';
+    stationCard.innerHTML = `
+      <div class="station-name">
+        <div><span class="station-icon">🚲</span> Station ${id}</div>
+      </div>
+      <div>Bikes: ${bikes} / ${capacity}</div>
+      <div class="progress-container">
+        <div class="progress-bar status-${status}" style="width: ${percentFull}%;"></div>
+      </div>
+      <div>${percentFull}% Full</div>
+    `;
+    
+    stationsContainer.appendChild(stationCard);
+  });
+}
+
+// Update the UI with current simulation data
+function updateUI() {
+  if (!simulationData) {
+    console.error('No simulation data available for UI update');
+    return;
+  }
+  
+  try {
+    // Update stats
+    totalStationsEl.textContent = simulationData.stations.length;
+    totalBikesEl.textContent = simulationData.total_bikes;
+    currentWeatherEl.innerHTML = `${getWeatherEmoji(simulationData.weather)} ${simulationData.weather.charAt(0).toUpperCase() + simulationData.weather.slice(1)}`;
+    currentTimeEl.innerHTML = `<span class="time-icon">🕒</span> ${formatTime(simulationData.time)}`;
+    timeDisplay.textContent = formatTime(simulationData.time);
+    
+    // Update map
+    renderMap();
+    
+    // Update station list
+    renderStationList();
+    
+    // Update charts
+    updateCharts();
+    
+    // Track history for usage chart
+    trackUsageHistory();
+  } catch (error) {
+    console.error('Error updating UI:', error);
+  }
+}
+
+// Initialize the application
+async function initializeApp() {
+  showLoading(true);
+  try {
+    console.log('Initializing application...');
+    const response = await fetch(`${API_BASE_URL}/init`);
+    if (!response.ok) {
+      throw new Error(`API responded with status: ${response.status}`);
+    }
+    
+    simulationData = await response.json();
+    console.log('Received simulation data:', simulationData);
+    
+    if (!simulationData || !simulationData.stations) {
+      throw new Error('Invalid simulation data received');
+    }
+    
+    updateUI();
+    initializeCharts();
+    
+    // Remove any existing instructions info before adding a new one
+    const existingInfo = document.querySelector('.controls-info');
+    if (existingInfo) {
+      existingInfo.remove();
+    }
+    
+    // Add instructions section
+    addInstructionsInfo();
+    
+    showLoading(false);
+  } catch (error) {
+    console.error('Failed to initialize simulation:', error);
+    showLoading(false);
+    alert('Failed to connect to simulation server. Please make sure the backend is running.');
   }
 }
 
