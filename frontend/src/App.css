@@ -22,10 +22,123 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  padding: 20px;
 }
 
 .App-link {
   color: #61dafb;
+}
+
+.simulation-grid {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.grid-row {
+  display: flex;
+  justify-content: center;
+}
+
+.grid-cell {
+  width: 120px;
+  height: 120px;
+  border: 1px solid #ccc;
+  margin: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: black;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.flow-in::after,
+.flow-out::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.7);
+  animation: flowAnimation 2s infinite;
+}
+
+.flow-in::after {
+  animation-name: flowInAnimation;
+}
+
+.flow-out::after {
+  animation-name: flowOutAnimation;
+}
+
+@keyframes flowInAnimation {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes flowOutAnimation {
+  from { transform: translateY(100%); }
+  to { transform: translateY(-100%); }
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+}
+
+.color-box.business {
+  background: rgba(0,128,255,0.6);
+}
+
+.color-box.residential {
+  background: rgba(255,128,0,0.6);
+}
+
+.time-display {
+  font-size: 1.2em;
+  margin: 10px 0;
+  color: white;
+}
+
+.flow-indicator {
+  font-size: 24px;
+  margin-top: 5px;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #ff4444;
+  font-size: 1.2rem;
 }
 
 @keyframes App-logo-spin {
