@@ -1,3 +1,10 @@
+export interface DistrictFlow {
+  from: string;
+  to: string;
+  amount: number;
+  bikes: number;
+}
+
 export interface SimulationData {
   populationDensity: number[][];
   flowData: number[][];
@@ -14,4 +21,6 @@ export interface SimulationData {
       district: string;
     };
   };
+  districtFlows: DistrictFlow[];
+  timeOfDay: string;
 }

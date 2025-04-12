@@ -14,11 +14,17 @@ class BikeRentalSimulation:
         
     def _initialize_bikes(self):
         bikes = np.zeros((self.grid_size, self.grid_size))
-        # More bikes in denser areas
         for i in range(self.grid_size):
             for j in range(self.grid_size):
-                base_bikes = int(20 * self.population_density[i][j])
-                bikes[i][j] = max(5, base_bikes)  # Minimum 5 bikes per station
+                # Base bikes depending on district type
+                location_type = self._get_district_type(i, j)
+                if location_type == 'business':
+                    base_bikes = np.random.randint(25, 35)  # Lots of bikes in business areas
+                elif location_type == 'residential':
+                    base_bikes = np.random.randint(15, 25)  # Medium amount in residential
+                else:
+                    base_bikes = np.random.randint(10, 20)  # Fewer in mixed areas
+                bikes[i][j] = base_bikes
         return bikes
 
     def _initialize_time_patterns(self):
@@ -79,8 +85,18 @@ class BikeRentalSimulation:
                 time_factor = self.get_time_factor(current_time, location_type)
                 
                 # Calculate flow based on time and population density
-                flow_results[i][j] = (self.population_density[i][j] * time_factor * 
-                                    np.sum(self.flow_matrix[station_idx]))
+                flow = (self.population_density[i][j] * time_factor * 
+                       np.sum(self.flow_matrix[station_idx]))
+                
+                # Update bike counts with more significant changes
+                bike_change = int(flow * 10)  # Increased scale factor for more visible changes
+                current_bikes = self.bikes_per_station[i][j]
+                new_bikes = current_bikes + bike_change
+                
+                # Ensure stations maintain reasonable bike counts (10-40 bikes)
+                self.bikes_per_station[i][j] = max(10, min(40, new_bikes))
+                
+                flow_results[i][j] = flow
         
         return flow_results
 
@@ -129,9 +145,15 @@ class BikeRentalSimulation:
         for i in range(self.grid_size):
             for j in range(self.grid_size):
                 station_id = i * self.grid_size + j
+                station_type = self._get_district_type(i, j)
+                bikes = int(self.bikes_per_station[i][j])
+                capacity = 30  # Maximum capacity per station
+                
                 district_info[station_id] = {
-                    'type': self._get_district_type(i, j),
-                    'bikes_available': int(self.bikes_per_station[i][j]),
+                    'type': station_type,
+                    'bikes_available': bikes,
+                    'capacity': capacity,
+                    'utilization': bikes / capacity,
                     'district': next((d for d, data in NYC_DISTRICTS.items() 
                                    if (i,j) in data['stations']), 'other')
                 }

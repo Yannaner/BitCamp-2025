@@ -41,17 +41,19 @@
 }
 
 .grid-cell {
-  width: 120px;
-  height: 120px;
-  border: 1px solid #ccc;
-  margin: 4px;
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
+  padding: 10px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(0,0,0,0.1));
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   color: black;
   font-weight: bold;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease-in-out;
   position: relative;
   overflow: hidden;
 }
@@ -61,32 +63,13 @@
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
-.flow-in::after,
-.flow-out::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 4px;
-  background: rgba(255,255,255,0.7);
-  animation: flowAnimation 2s infinite;
+/* Add smoother transitions for flow indicators */
+.flow-indicator {
+  transition: color 0.3s ease-in-out;
 }
 
-.flow-in::after {
-  animation-name: flowInAnimation;
-}
-
-.flow-out::after {
-  animation-name: flowOutAnimation;
-}
-
-@keyframes flowInAnimation {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(100%); }
-}
-
-@keyframes flowOutAnimation {
-  from { transform: translateY(100%); }
-  to { transform: translateY(-100%); }
+.bikes-available {
+  transition: all 0.3s ease-in-out;
 }
 
 .legend {
@@ -122,11 +105,6 @@
   color: white;
 }
 
-.flow-indicator {
-  font-size: 24px;
-  margin-top: 5px;
-}
-
 .loading {
   text-align: center;
   padding: 2rem;
@@ -139,6 +117,95 @@
   padding: 2rem;
   color: #ff4444;
   font-size: 1.2rem;
+}
+
+.district-name {
+  font-size: 0.8em;
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0,0,0,0.5);
+  margin-bottom: 4px;
+}
+
+.bikes-available {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+/* District type colors */
+.district-manhattan { background-color: rgba(66, 135, 245, 0.8); }
+.district-brooklyn { background-color: rgba(245, 166, 66, 0.8); }
+.district-queens { background-color: rgba(66, 245, 123, 0.8); }
+.district-bronx { background-color: rgba(245, 66, 66, 0.8); }
+.district-staten { background-color: rgba(176, 66, 245, 0.8); }
+
+/* Flow indicators */
+.flow-high { color: #ff4444; }
+.flow-medium { color: #ffaa00; }
+.flow-low { color: #44ff44; }
+
+/* Time of day effects */
+.morning { box-shadow: 0 4px 8px rgba(255, 200, 0, 0.3); }
+.afternoon { box-shadow: 0 4px 8px rgba(0, 150, 255, 0.3); }
+.evening { box-shadow: 0 4px 8px rgba(128, 0, 255, 0.3); }
+.night { box-shadow: 0 4px 8px rgba(0, 0, 128, 0.3); }
+
+/* District Connections */
+.district-flow {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0.2), 
+    rgba(255,255,255,0.8), 
+    rgba(255,255,255,0.2)
+  );
+  animation: flowPulse 2s infinite;
+}
+
+@keyframes flowPulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+.flow-amount {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  transform: translateY(-50%);
+}
+
+.flow-stats {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-width: 800px;
+  margin: 1rem auto;
+  padding: 1rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 @keyframes App-logo-spin {
