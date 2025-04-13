@@ -616,6 +616,16 @@ async function initializeApp() {
       explanationsContainer.style.display = 'none';
     }
     
+    // Make the "Show Explanations" button more visible with custom styling
+    const fetchExplanationsBtn = document.getElementById('fetch-explanations');
+    if (fetchExplanationsBtn) {
+      fetchExplanationsBtn.style.backgroundColor = '#ff9800'; // Bright orange color
+      fetchExplanationsBtn.style.color = 'white';
+      fetchExplanationsBtn.style.fontWeight = 'bold';
+      fetchExplanationsBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+      fetchExplanationsBtn.style.border = '1px solid #e68a00';
+    }
+    
     showLoading(false);
   } catch (error) {
     console.error('Failed to initialize simulation:', error);
