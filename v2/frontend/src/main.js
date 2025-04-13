@@ -80,12 +80,88 @@ const fetchExplanationsBtn = document.getElementById('fetch-explanations');
 const technicalExplanationEl = document.getElementById('technical-explanation');
 const nonTechnicalExplanationEl = document.getElementById('non-technical-explanation');
 
-// Show/hide loading overlay
-function showLoading(show) {
+// Enhanced Show/hide loading overlay
+function showLoading(show, options = {}) {
+  const loadingOverlay = document.getElementById('loading-overlay');
+  const progressBar = document.getElementById('loading-progress-bar');
+  const percentageText = document.getElementById('loading-percentage');
+  const loadingMessage = document.querySelector('.loading-message');
+  const loadingDetails = document.querySelector('.loading-details');
+  
   if (show) {
+    // Set default options
+    const defaults = {
+      message: '⚛️ Running simulation...',
+      details: 'Please wait while we process your request',
+      useQuantum: simulationModeSelect.value === 'quantum',
+      showProgress: true,
+      progressDuration: 2500 // ms to fill progress bar
+    };
+    
+    // Merge defaults with provided options
+    const settings = {...defaults, ...options};
+    
+    // Update loading message
+    if (loadingMessage) {
+      loadingMessage.textContent = settings.message;
+    }
+    
+    if (loadingDetails) {
+      loadingDetails.textContent = settings.details;
+    }
+    
+    // Add or remove quantum class based on simulation mode
+    if (settings.useQuantum) {
+      loadingOverlay.classList.add('quantum-loading');
+    } else {
+      loadingOverlay.classList.remove('quantum-loading');
+    }
+    
+    // Reset and animate progress bar if needed
+    if (progressBar && settings.showProgress) {
+      progressBar.style.width = '0%';
+      percentageText.textContent = '0%';
+      
+      // Start progress animation
+      let progress = 0;
+      const interval = 30; // Update every 30ms
+      const increment = interval / settings.progressDuration * 100;
+      
+      const progressTimer = setInterval(() => {
+        progress += increment;
+        if (progress >= 95) {
+          progress = 95; // Cap at 95% until complete
+          clearInterval(progressTimer);
+        }
+        
+        progressBar.style.width = `${progress}%`;
+        percentageText.textContent = `${Math.round(progress)}%`;
+      }, interval);
+      
+      // Store timer reference to clear it later
+      loadingOverlay.dataset.progressTimer = progressTimer;
+    }
+    
+    // Show overlay with animation
     loadingOverlay.classList.remove('hidden');
+    loadingOverlay.classList.add('fade-in');
   } else {
-    loadingOverlay.classList.add('hidden');
+    // Complete progress bar animation
+    if (progressBar) {
+      progressBar.style.width = '100%';
+      percentageText.textContent = '100%';
+      
+      // Clear any existing timers
+      if (loadingOverlay.dataset.progressTimer) {
+        clearInterval(parseInt(loadingOverlay.dataset.progressTimer));
+        delete loadingOverlay.dataset.progressTimer;
+      }
+    }
+    
+    // Hide overlay with slight delay for progress bar completion
+    setTimeout(() => {
+      loadingOverlay.classList.add('hidden');
+    }, 300);
   }
 }
 
@@ -535,13 +611,12 @@ function setupExplanationTabs() {
 
 // Modified fetchExplanations function
 async function fetchExplanations() {
-  showLoading(true);
-  
-  // Update the loading overlay text
-  const loadingText = document.querySelector('#loading-overlay p');
-  if (loadingText) {
-    loadingText.textContent = 'Creating explanations...';
-  }
+  showLoading(true, {
+    message: '💡 Creating explanations...',
+    details: 'Analyzing simulation data using quantum algorithms',
+    showProgress: true,
+    progressDuration: 4000
+  });
   
   // Show loading state in explanation containers
   document.getElementById('technical-explanation').innerHTML = 
@@ -636,15 +711,15 @@ async function initializeApp() {
 
 // Event listeners for simulation actions
 runStepBtn.addEventListener('click', async () => {
-  showLoading(true);
+  const useQuantum = simulationModeSelect.value === 'quantum';
+  
+  showLoading(true, {
+    message: useQuantum ? '⚛️ Running quantum simulation...' : '🧮 Running classical simulation...',
+    details: useQuantum ? 'Solving quantum probability wave functions' : 'Computing Markov chain transitions',
+    useQuantum: useQuantum
+  });
+  
   try {
-    const useQuantum = simulationModeSelect.value === 'quantum';
-    const loadingText = document.querySelector('#loading-overlay p');
-    if (loadingText) {
-      loadingText.textContent = useQuantum ?
-        '⚛️ Running quantum simulation...' :
-        '🧮 Running classical simulation...';
-    }
     const response = await fetch(`${API_BASE_URL}/step`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -661,7 +736,12 @@ runStepBtn.addEventListener('click', async () => {
 });
 
 advanceTimeBtn.addEventListener('click', async () => {
-  showLoading(true);
+  showLoading(true, {
+    message: '🕒 Advancing time...',
+    details: 'Updating time-of-day factors and recalculating probabilities',
+    progressDuration: 1500
+  });
+  
   try {
     const response = await fetch(`${API_BASE_URL}/advance_time`, {
       method: 'POST',
@@ -678,33 +758,29 @@ advanceTimeBtn.addEventListener('click', async () => {
   }
 });
 
-weatherSelect.addEventListener('change', async () => {
-  showLoading(true);
-  try {
-    const response = await fetch(`${API_BASE_URL}/set_weather`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ weather: weatherSelect.value })
-    });
-    const result = await response.json();
-    simulationData = result.data;
-    updateUI();
-    showLoading(false);
-  } catch (error) {
-    console.error('Failed to set weather:', error);
-    showLoading(false);
-    alert('Failed to set weather. Please try again.');
-  }
-});
-
 simulateDayBtn.addEventListener('click', async () => {
+  const useQuantum = simulationModeSelect.value === 'quantum';
+  
+  showLoading(true, {
+    message: useQuantum ? '⚛️ Simulating full day with quantum...' : '📅 Simulating full day...',
+    details: 'Running 24-hour simulation cycle',
+    useQuantum: useQuantum,
+    progressDuration: 1000 // Reduced to 1 second (1000ms)
+  });
+  
   try {
-    const useQuantum = simulationModeSelect.value === 'quantum';
     const response = await fetch(`${API_BASE_URL}/simulate_day`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ useQuantum })
     });
+    
+    // Set a timer to hide loading overlay after exactly 1 second
+    setTimeout(() => {
+      showLoading(false);
+    }, 1000);
+    
+    // Continue with processing the response
     const dayResults = await response.json();
     let index = 0;
     const interval = setInterval(() => {
@@ -718,6 +794,8 @@ simulateDayBtn.addEventListener('click', async () => {
     }, 500);
   } catch (error) {
     console.error('Failed to simulate day:', error);
+    // Make sure to hide loading overlay even if there's an error
+    showLoading(false);
     alert('Failed to simulate a full day. Please try again.');
   }
 });
