@@ -6,6 +6,51 @@ import json
 import matplotlib.cm as cm
 from matplotlib.patches import FancyArrowPatch
 
+neighborhood_densities = {
+    'Midtown': 100000,
+    'Downtown': 90000,
+    'Upper East Side': 130000,
+    'Upper West Side': 100000,
+    'Williamsburg': 70000,
+    'DUMBO': 60000,
+    'Long Island City': 50000,
+    'South Bronx': 45000,
+}
+
+STATION_LOCATIONS = [
+    {'neighborhood': 'Midtown', 'address': '42nd St & 5th Ave'},
+    {'neighborhood': 'Midtown', 'address': 'Grand Central Terminal'},
+    {'neighborhood': 'Midtown', 'address': 'Bryant Park'},
+    {'neighborhood': 'Downtown', 'address': 'Wall Street'},
+    {'neighborhood': 'Downtown', 'address': 'Battery Park'},
+    {'neighborhood': 'Upper East Side', 'address': 'Central Park East'},
+    {'neighborhood': 'Upper East Side', 'address': '86th St & Lexington'},
+    {'neighborhood': 'Upper West Side', 'address': 'Columbus Circle'},
+    {'neighborhood': 'Upper West Side', 'address': '72nd St & Broadway'},
+    {'neighborhood': 'Williamsburg', 'address': 'Bedford Ave'},
+    {'neighborhood': 'Williamsburg', 'address': 'Metropolitan Ave'},
+    {'neighborhood': 'DUMBO', 'address': 'Brooklyn Bridge Park'},
+    {'neighborhood': 'DUMBO', 'address': 'York St'},
+    {'neighborhood': 'Long Island City', 'address': 'Court Square'},
+    {'neighborhood': 'South Bronx', 'address': 'The Hub'},
+    #New Stations I added - Safa
+    {'neighborhood': 'Upper East Side', 'address': '96th St & 3rd Ave'},
+    {'neighborhood': 'Midtown', 'address': 'Times Square'},
+    {'neighborhood': 'Downtown', 'address': 'Fulton St Station'},
+    {'neighborhood': 'Williamsburg', 'address': 'Grand St & Bedford Ave'},
+    {'neighborhood': 'Long Island City', 'address': 'Vernon Blvd & 50th Ave'},
+]
+
+def assign_capacities(locations, densities):
+    capacities = []
+    for loc in locations:
+        density = densities.get(loc['neighborhood'], 50000)  # Default density
+        # Normalize density to a capacity between 10 and 30
+        capacity = int(np.interp(density, [45000, 130000], [10, 30]))
+        capacities.append(capacity)
+    return capacities
+
+
 class BikeRentalSimulation:
     """
     A quantum-enhanced Markov Chain simulation for bike rental systems.
@@ -34,7 +79,7 @@ class BikeRentalSimulation:
     def initialize_system(self):
         """Initialize the system with default parameters."""
         # Set station capacities (maximum number of bikes each station can hold)
-        self.station_capacities = np.random.randint(5, 20, size=self.num_stations)
+        self.station_capacities = assign_capacities(STATION_LOCATIONS, neighborhood_densities)
         
         # Initialize station locations (x, y coordinates) with 1-based indexing
         # Creating a proper distribution across the map area for better visualization

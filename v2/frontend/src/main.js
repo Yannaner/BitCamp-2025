@@ -47,7 +47,13 @@ const STATION_LOCATIONS = [
   { neighborhood: 'DUMBO', address: 'Brooklyn Bridge Park' },
   { neighborhood: 'DUMBO', address: 'York St' },
   { neighborhood: 'Long Island City', address: 'Court Square' },
-  { neighborhood: 'South Bronx', address: 'The Hub' }
+  { neighborhood: 'South Bronx', address: 'The Hub' },
+  //New - Safa
+  { neighborhood: 'Upper East Side', address: '96th St & 3rd Ave' },
+  { neighborhood: 'Midtown', address: 'Times Square' },
+  { neighborhood: 'Downtown', address: 'Fulton St Station' },
+  { neighborhood: 'Williamsburg', address: 'Grand St & Bedford Ave' },
+  { neighborhood: 'Long Island City', address: 'Vernon Blvd & 50th Ave' },
 ];
 
 // Weather icons mapping
