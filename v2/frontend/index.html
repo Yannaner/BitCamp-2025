@@ -120,16 +120,25 @@
         </div>
       </div>
       
-      <!-- New Explanations Section -->
+      <!-- Fixed Explanations Section -->
       <div id="explanations-container" class="simulation-panel simulation-explanations">
-        <h2>💡 Simulation Explanations</h2>
-        <div class="explanation technical">
-          <h3>Technical Explanation</h3>
-          <p id="technical-explanation">Click the "Show Explanations" button to load the explanation.</p>
+        <div class="explanations-header">
+          <h2>Simulation Insights</h2>
         </div>
-        <div class="explanation non-technical">
-          <h3>Non-Technical Explanation</h3>
-          <p id="non-technical-explanation">Click the "Show Explanations" button to load the explanation.</p>
+        
+        <div class="explanations-content">
+          <div class="explanation-tabs">
+            <div class="explanation-tab technical-icon active" data-tab="technical">Technical Analysis</div>
+            <div class="explanation-tab non-technical-icon" data-tab="non-technical">Simple Explanation</div>
+          </div>
+          
+          <div id="technical-tab" class="tab-content technical-tab active">
+            <div id="technical-explanation">Click the "Show Explanations" button to generate analysis.</div>
+          </div>
+          
+          <div id="non-technical-tab" class="tab-content non-technical-tab">
+            <div id="non-technical-explanation">Click the "Show Explanations" button to generate analysis.</div>
+          </div>
         </div>
       </div>
     </main>

@@ -492,44 +492,97 @@ function updateUI() {
   }
 }
 
-// Helper to convert newlines to <br> tags for better formatting
-function convertNewlinesToBreaks(text) {
-  return text.split('\n').join('<br>');
+// Format explanation content for better display
+function formatExplanationContent(text) {
+  if (!text) return 'No explanation available.';
+  
+  // Replace newlines with paragraph breaks
+  let formattedText = text.split('\n\n').map(para => 
+    para.trim() ? `<div class="explanation-section">${para}</div>` : ''
+  ).join('');
+  
+  // Remove any asterisks or other markdown
+  formattedText = formattedText.replace(/\*\*/g, '').replace(/\*/g, '');
+  
+  // Highlight numbers and statistics in technical explanations
+  formattedText = formattedText.replace(/(\d+(\.\d+)?%?)/g, '<span class="tech-stat">$1</span>');
+  
+  return formattedText;
 }
 
-// NEW: Fetch technical and non-technical explanations from the backend
+// Set up tab switching for explanations
+function setupExplanationTabs() {
+  const tabs = document.querySelectorAll('.explanation-tab');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active class from all tabs
+      tabs.forEach(t => t.classList.remove('active'));
+      
+      // Add active class to clicked tab
+      tab.classList.add('active');
+      
+      // Hide all tab content
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // Show the corresponding tab content
+      const tabName = tab.getAttribute('data-tab');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+    });
+  });
+}
+
+// Modified fetchExplanations function
 async function fetchExplanations() {
   showLoading(true);
-  // Update the loading overlay text for explanation creation
+  
+  // Update the loading overlay text
   const loadingText = document.querySelector('#loading-overlay p');
   if (loadingText) {
-    loadingText.textContent = 'Creating explanation...';
+    loadingText.textContent = 'Creating explanations...';
   }
+  
+  // Show loading state in explanation containers
+  document.getElementById('technical-explanation').innerHTML = 
+    '<div class="loading-explanation">Generating technical analysis...</div>';
+  document.getElementById('non-technical-explanation').innerHTML = 
+    '<div class="loading-explanation">Generating simple explanation...</div>';
+  
   try {
     const response = await fetch(`${API_BASE_URL}/explain`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'both' })
     });
+    
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
+    
     const data = await response.json();
     const { technical, non_technical } = data.explanations;
-    // Use innerHTML with newline conversion for better formatting
-    technicalExplanationEl.innerHTML = convertNewlinesToBreaks(technical || 'No technical explanation available.');
-    nonTechnicalExplanationEl.innerHTML = convertNewlinesToBreaks(non_technical || 'No non-technical explanation available.');
+    
+    // Format and display explanations with improved formatting
+    document.getElementById('technical-explanation').innerHTML = 
+      formatExplanationContent(technical || 'No technical explanation available.');
+    
+    document.getElementById('non-technical-explanation').innerHTML = 
+      formatExplanationContent(non_technical || 'No non-technical explanation available.');
+    
     showLoading(false);
   } catch (error) {
     console.error('Failed to fetch explanations:', error);
+    
+    // Show error state
+    document.getElementById('technical-explanation').innerHTML = 
+      '<div class="explanation-section">Error loading explanation. Please try again.</div>';
+    document.getElementById('non-technical-explanation').innerHTML = 
+      '<div class="explanation-section">Error loading explanation. Please try again.</div>';
+    
     showLoading(false);
     alert('Failed to load simulation explanations.');
   }
-}
-
-// Add event listener for the "Show Explanations" button
-if (fetchExplanationsBtn) {
-  fetchExplanationsBtn.addEventListener('click', fetchExplanations);
 }
 
 // Initialize the application
@@ -553,6 +606,16 @@ async function initializeApp() {
       existingInfo.remove();
     }
     addInstructionsInfo();
+    
+    // Setup explanation tabs
+    setupExplanationTabs();
+    
+    // Initial state for explanations container
+    const explanationsContainer = document.getElementById('explanations-container');
+    if (explanationsContainer) {
+      explanationsContainer.style.display = 'none';
+    }
+    
     showLoading(false);
   } catch (error) {
     console.error('Failed to initialize simulation:', error);
@@ -650,6 +713,18 @@ simulateDayBtn.addEventListener('click', async () => {
 });
 
 resetSimulationBtn.addEventListener('click', initializeApp);
+
+// Add event listener for the "Show Explanations" button
+if (fetchExplanationsBtn) {
+  fetchExplanationsBtn.addEventListener('click', () => {
+    // Show the explanations container if it was hidden
+    const explanationsContainer = document.getElementById('explanations-container');
+    if (explanationsContainer) {
+      explanationsContainer.style.display = 'block';
+    }
+    fetchExplanations();
+  });
+}
 
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', initializeApp);

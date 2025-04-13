@@ -749,207 +749,147 @@ canvas {
   border-top: 1px dashed #ddd;
 }
 
-/* Enhanced Explanations Section (Modern Card Style) */
+/* Add this to your style.css file */
+
+/* Redesigned Explanations Section */
 .simulation-explanations {
   background-color: #fff;
-  border: 1px solid #eeeeee;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-family: 'Inter', sans-serif;
-}
-
-.simulation-explanations > h2 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  color: #2c3e50;
-  font-size: 1.5rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.explanation {
-  margin-bottom: 24px;
-}
-
-.explanation h3 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  color: #34495e;
-  font-size: 1.2rem;
-  font-weight: 500;
-}
-
-.explanation p {
-  line-height: 1.6;
-  color: #555;
-  margin-bottom: 12px;
-  white-space: pre-wrap;
-}
-
-.explanation.technical {
-  border-left: 4px solid #3498db;
-  padding-left: 16px;
-}
-
-.explanation.non-technical {
-  border-left: 4px solid #27ae60;
-  padding-left: 16px;
-}
-
-.explanation:hover {
-  background-color: #fafafa;
-  transition: background-color 0.2s ease-in-out;
-}
-
-/* Animation for bike flow */
-@keyframes flowAnimation {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 100;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Make the animate day smoother */
-@keyframes updateTransition {
-  from { opacity: 0.7; }
-  to { opacity: 1; }
-}
-
-.data-updating {
-  animation: gentleUpdate 0.3s ease;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.pulse-animation {
-  animation: softPulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes softPulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.03); opacity: 0.9; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.highlight-station {
-  animation: softPulse 2s infinite;
-}
-
-/* Borough Overlay */
-.borough-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-  background-image: 
-    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-  background-size: 10% 10%;
-  opacity: 0.8;
-}
-
-/* Modern Card Design for simulation panels */
-.card, .simulation-panel, .stats-panel, .visualization-panel, .station-list, .chart-container {
-  background-color: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(230, 230, 230, 0.7);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin: 24px 0;
   overflow: hidden;
-  transition: all 0.25s ease;
 }
 
-.card:hover, .simulation-panel:hover, .chart-container:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+.explanations-header {
+  background: linear-gradient(135deg, #3498db, #9b59b6);
+  color: white;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Header Button Styling */
-.run-btn, .advance-btn, .simulate-btn, .reset-btn {
-  padding: 8px 15px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  font-weight: 500;
+.explanations-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: white;
   display: flex;
   align-items: center;
-  gap: 6px;
-  border: none;
+  gap: 10px;
+}
+
+.explanations-header h2::before {
+  content: "💡";
+  font-size: 1.5rem;
+}
+
+.explanations-content {
+  padding: 0;
+}
+
+.explanation-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.explanation-tab {
+  padding: 12px 24px;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  color: #666;
+  position: relative;
+  transition: all 0.2s ease;
 }
 
-.run-btn {
-  background: linear-gradient(to right, #3498db, #2980b9);
-  color: white;
+.explanation-tab.active {
+  color: #3498db;
+  background-color: rgba(52, 152, 219, 0.05);
 }
 
-.advance-btn {
-  background: linear-gradient(to right, #9b59b6, #8e44ad);
-  color: white;
+.explanation-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #3498db;
 }
 
-.simulate-btn {
-  background: linear-gradient(to right, #27ae60, #2ecc71);
-  color: white;
+.explanation-tab:not(.active):hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
-.reset-btn {
-  background: linear-gradient(to right, #e74c3c, #c0392b);
-  color: white;
+.tab-content {
+  display: none;
+  padding: 24px;
+  line-height: 1.6;
 }
 
-.run-btn:hover, .advance-btn:hover, .simulate-btn:hover, .reset-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
 }
 
-.run-btn:active, .advance-btn:active, .simulate-btn:active, .reset-btn:active {
-  transform: translateY(0);
+.technical-tab {
+  border-left: 3px solid #3498db;
 }
 
-@media (max-width: 768px) {
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-  
-  .charts {
-    grid-template-columns: 1fr;
-  }
+.non-technical-tab {
+  border-left: 3px solid #2ecc71;
+}
 
-  .station-card {
-    padding: 12px;
-  }
-  
-  .legend {
-    bottom: 10px;
-    right: 10px;
-    padding: 8px;
-    max-width: 150px;
-    font-size: 0.75rem;
-  }
-  
-  .station-point {
-    width: 32px;
-    height: 32px;
-  }
+.technical-icon::before {
+  content: "⚙️";
+  margin-right: 8px;
+}
+
+.non-technical-icon::before {
+  content: "👨‍👩‍👧‍👦";
+  margin-right: 8px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#technical-explanation, #non-technical-explanation {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+#technical-explanation {
+  color: #2c3e50;
+}
+
+#non-technical-explanation {
+  color: #34495e;
+}
+
+.explanation-section {
+  margin-bottom: 16px;
+}
+
+.explanation-section:last-child {
+  margin-bottom: 0;
+}
+
+.loading-explanation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Highlight key stats in technical explanation */
+.tech-stat {
+  display: inline-block;
+  background-color: rgba(52, 152, 219, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+  color: #2980b9;
 }
